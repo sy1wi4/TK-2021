@@ -2,6 +2,31 @@ import sys
 import ply.lex as lex
 import scanner  # scanner.py is a file you create, (it is not an external library)
 
+# keywords
+reserved = {
+    'if'    : 'IF',
+    'else'  : 'ELSE',
+    'for'   : 'FOR',
+    'while' : 'WHILE',
+    'break'   : 'BREAK',
+    'continue': 'CONTINUE',
+    'return'  : 'RETURN',
+    'eye'     : 'EYE',
+    'zeros'   : 'ZEROS',
+    'ones'    : 'ONES',
+    'print'   : 'PRINT'
+}
+
+tokens = (
+    'PLUS',
+    'MINUS',
+    'MULT',
+    'DIV',
+    'LPAREN',
+    'RPAREN',
+    'NUMBER',
+)
+
 
 if __name__ == '__main__':
 
