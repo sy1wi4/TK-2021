@@ -1,6 +1,21 @@
 import sys
 import ply.lex as lex
 
+# keywords
+reserved = {
+    'if'    : 'IF',
+    'else'  : 'ELSE',
+    'for'   : 'FOR',
+    'while' : 'WHILE',
+    'break'   : 'BREAK',
+    'continue': 'CONTINUE',
+    'return'  : 'RETURN',
+    'eye'     : 'EYE',
+    'zeros'   : 'ZEROS',
+    'ones'    : 'ONES',
+    'print'   : 'PRINT'
+}
+
 tokens = (
     'PLUS',
     'MINUS',
@@ -38,7 +53,7 @@ if __name__ == '__main__':
     lexer = lex.lex()
     fh = None
     try:
-        fh = open(sys.argv[1] if len(sys.argv) > 1 else "example.txt", "r");
+        fh = open(sys.argv[1] if len(sys.argv) > 1 else "example.txt", "r")
         lexer.input( fh.read() )
         for token in lexer:
             print("line %d: %s(%s)" %(token.lineno, token.type, token.value))
