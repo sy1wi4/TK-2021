@@ -3,10 +3,22 @@ import sys
 import ply.lex as lex
 
 
-tokens = ('ADDASSIGN', 'SUBASSIGN','MULASSIGN', 'DIVADDIGN',
-          'LEQUAL', 'REQUAL', 'DIFFERS', 'EQUALS', #, 'FLOAT', 'INTNUM',
+reserved = {'if' : 'IF',
+            'else' : 'ELSE',
+            'for' : 'FOR',
+            'while' : 'WHILE',
+            'break' : 'BREAK',
+            'continue' : 'CONTINUE',
+            'return' : 'RETURN',
+            'eye' : 'EYE',
+            'zeros' : 'ZEROS',
+            'ones' : 'ONES',
+            'print' : 'PRINT'}
+
+tokens = ['ADDASSIGN', 'SUBASSIGN','MULASSIGN', 'DIVADDIGN',
+          'LEQUAL', 'REQUAL', 'DIFFERS', 'EQUALS', 'FLOAT',# 'INTNUM',
           'ADDMATRIX', 'SUBMATRIX', 'MULMATRIX', 'DIVMATRIX',
-          'NUMBER', 'ID',  'COMMENT')
+          'INTNUM', 'ID',  'COMMENT'] + list(reserved.values())
 
 t_ignore = '  \t'
 t_EQUALS = r'\=='
@@ -23,15 +35,18 @@ t_SUBMATRIX = r'\.-'
 t_MULMATRIX = r'\.\*'
 t_DIVMATRIX = r'\.\/'
 
-literals = ['+', '-', '*', '/', '(', ')', '{','}','[',']','=', '<', '>', ':', "'",',',';','.']
-
-reserved = {'if' : 'if',
-            'else' : 'else',
-            'for' : 'for',
-            'while' : 'while'}
+literals = ['+', '-', '*', '/', '(', ')', '{','}','[',']','=', '<', '>', ':', "'",',',';','.', '"']
 
 
-def t_NUMBER(t):
+
+def t_FLOAT(t):
+    r"(-?\d*\.\d+([eE][-+]?\d+)?) | (-?\d+[eE][-+]?\d+)"
+    t.value = float(t.value)
+    return t
+
+
+
+def t_INTNUM(t):
     r'\d+'
     t.value = int(t.value)
     return t
@@ -39,6 +54,7 @@ def t_NUMBER(t):
 
 def t_ID(t):
     r'[a-zA-Z_]\w*'
+    t.type = reserved.get(t.value, 'ID')
     return t
 
 
