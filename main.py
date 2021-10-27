@@ -16,7 +16,7 @@ reserved = {'if' : 'IF',
             'print' : 'PRINT'}
 
 tokens = ['ADDASSIGN', 'SUBASSIGN','MULASSIGN', 'DIVADDIGN',
-          'LEQUAL', 'REQUAL', 'DIFFERS', 'EQUALS', 'FLOAT',# 'INTNUM',
+          'LEQUAL', 'REQUAL', 'DIFFERS', 'EQUALS', 'FLOAT', 'STRING',
           'ADDMATRIX', 'SUBMATRIX', 'MULMATRIX', 'DIVMATRIX',
           'INTNUM', 'ID',  'COMMENT'] + list(reserved.values())
 
@@ -44,6 +44,11 @@ def t_FLOAT(t):
     t.value = float(t.value)
     return t
 
+
+def t_STRING(t):
+    r'"[\w\W]+"'
+    t.value = str(t.value)
+    return t
 
 
 def t_INTNUM(t):
