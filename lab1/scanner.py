@@ -15,7 +15,7 @@ reserved = {
 }
 
 tokens = ['ADDASSIGN', 'SUBASSIGN', 'MULASSIGN', 'DIVASSIGN',
-          'LEQUAL', 'REQUAL', 'DIFFERS', 'EQUALS', 'FLOAT', 'STRING',
+          'LEQUAL', 'GREQUAL', 'DIFFERS', 'EQUALS', 'FLOAT', 'STRING',
           'ADDMATRIX', 'SUBMATRIX', 'MULMATRIX', 'DIVMATRIX',
           'INTNUM', 'ID', 'COMMENT'] + list(reserved.values())
 
@@ -26,7 +26,7 @@ t_SUBASSIGN = r'\-='
 t_MULASSIGN = r'\*='
 t_DIVASSIGN = r'\\='
 t_LEQUAL = r'\<='
-t_REQUAL = r'\>='
+t_GREQUAL = r'\>='
 t_DIFFERS = r'\!='
 t_ADDMATRIX = r'\.\+'
 t_SUBMATRIX = r'\.-'
@@ -37,13 +37,13 @@ literals = ['+', '-', '*', '/', '(', ')', '{', '}', '[', ']', '=', '<', '>', ':'
 
 
 def t_FLOAT(t):
-    r'[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?'
+    r'(\d+\.(\d*)|\.\d+)([eE][+-]?\d+)?'
     t.value = float(t.value)
     return t
 
 
 def t_STRING(t):
-    r'"[\w\W]+"'
+    r'"(.)+?"'
     t.value = str(t.value)
     return t
 
