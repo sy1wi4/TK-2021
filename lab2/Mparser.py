@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import scanner as scanner
+import Lab1.scanner as scanner
 import ply.yacc as yacc
 
 tokens = scanner.tokens + list(scanner.literals)
@@ -8,6 +8,8 @@ tokens = scanner.tokens + list(scanner.literals)
 precedence = (
     # to fill ...
     ("left", '+', '-'),
+    ("left", 'TRANSPOSE'),
+    ("right", 'UMINUS')
     # to fill ...
 )
 
@@ -43,15 +45,30 @@ def p_instruction(p):
 
 def p_assignment(p):
     """ assignment : matrix_assignment
+                   | uminus_matrix
                    | variable_assignment
-                   | row_col_assignment"""
+                   | uminus_variable
+                   | row_col_assignment
+                   | uminus_row_col
+                   | id_assignment
+                   | uminus_id"""
+
+def p_uminus_matrix(p):
+    """ uminus_matrix : ID '=' '-' transposing %prec UMINUS """
 
 def p_matrix_assignment(p):
-    """ matrix_assignment : ID '=' m_ass_option"""
+    """ matrix_assignment : ID '=' transposing"""
+
+def p_transposing(p):
+    """transposing : transpose
+                   | m_ass_option"""
+
+def p_transpose(p):
+    """transpose : m_ass_option "'" %prec TRANSPOSE """
 
 def p_m_ass_option(p):
     """ m_ass_option : function
-                     | '[' row_list ']' """
+                     | '[' row_list ']'  """
 def p_function(p):
     """ function : fun_name '(' INTNUM ')' """
 
@@ -78,11 +95,23 @@ def p_number(p):
 def p_variable_assignment(p):
     """ variable_assignment : ID '=' number"""
 
+def p_uminus_variable(p):
+    """ uminus_variable : ID '=' '-' number %prec UMINUS """
+
 def p_row_col_assignment(p):
     """ row_col_assignment : matrix_id '=' number """
 
+def p_uminus_row_col(p):
+    """ uminus_row_col : matrix_id '=' '-' number %prec UMINUS """
+
 def p_matrix_id(p):
     """matrix_id : ID '[' INTNUM ',' INTNUM ']' """
+
+def p_id_assignment(p):
+    """ id_assignment : ID '=' ID """
+
+def p_uminus_id(p):
+    """ uminus_id : ID '=' '-' ID %prec UMINUS"""
 
 
 # to finish the grammar
