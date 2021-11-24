@@ -51,7 +51,8 @@ def p_assignment(p):
                    | row_col_assignment
                    | uminus_row_col
                    | id_assignment
-                   | uminus_id"""
+                   | uminus_id
+                   | special_assign"""
 
 def p_uminus_matrix(p):
     """ uminus_matrix : ID '=' '-' transposing %prec UMINUS """
@@ -86,7 +87,7 @@ def p_row(p):
 
 def p_num_list(p):
     """ num_list : number
-                 | number ',' num_list """
+                 | num_list ',' number """
 
 def p_number(p):
     """ number : INTNUM
@@ -108,10 +109,47 @@ def p_matrix_id(p):
     """matrix_id : ID '[' INTNUM ',' INTNUM ']' """
 
 def p_id_assignment(p):
-    """ id_assignment : ID '=' ID """
+    """ id_assignment : ID '=' id_expression """
 
 def p_uminus_id(p):
-    """ uminus_id : ID '=' '-' ID %prec UMINUS"""
+    """ uminus_id : ID '=' '-' id_expression %prec UMINUS"""
+
+def p_id_expression(p):
+    """ id_expression : dot_expr
+                      | '(' bin_expr ')' """
+
+def p_dot_exp(p):
+    """ dot_expr : dot_expr ADDMATRIX dot_mul_expr
+                 | dot_expr SUBMATRIX dot_mul_expr
+                 | dot_mul_expr"""
+
+def p_dot_mul_expr(p):
+    """ dot_mul_expr : dot_mul_expr MULMATRIX bin_expr
+                     | dot_mul_expr DIVMATRIX bin_expr
+                     | bin_expr"""
+
+def p_bin_expr(p):
+    """ bin_expr : bin_expr '+' bin_mul_expr
+                 | bin_expr '-' bin_mul_expr
+                 | bin_mul_expr"""
+
+def p_bin_mul_expr(p):
+    """ bin_mul_expr : bin_mul_expr '*' id_transpose
+                     | bin_mul_expr '/' id_transpose
+                     | id_transpose"""
+
+def p_id_transpose(p):
+    """ id_transpose : ID "'" %prec TRANSPOSE
+                     | ID"""
+
+def p_special_assign(p):
+    """ special_assign : ID special_operation id_expression"""
+
+def p_special_operation(p):
+    """ special_operation : ADDASSIGN
+                          | SUBASSIGN
+                          | MULASSIGN
+                          | DIVASSIGN"""
 
 
 # to finish the grammar
