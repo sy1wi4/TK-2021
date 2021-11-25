@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import Lab1.scanner as scanner
+import lab2.scanner as scanner
 import ply.yacc as yacc
 
 tokens = scanner.tokens + list(scanner.literals)
