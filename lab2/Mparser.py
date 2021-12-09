@@ -59,8 +59,7 @@ def p_block_of_code(p):
 
 
 def p_assignment(p):
-    """ assignment : identificator ass_operation ass_option
-                   | identificator ass_operation '-' ass_option %prec UMINUS"""
+    """ assignment : identificator ass_operation ass_option"""
 
 def p_ass_operation(p):
     """ ass_operation : '='
@@ -78,38 +77,33 @@ def p_identificator(p):
 def p_matrix_id(p):
     """ matrix_id : ID '[' INTNUM ',' INTNUM ']'"""
 
-
+#przenieść uminus
 def p_ass_option(p):
     """ ass_option : matrix_assignment
-                   | var_expression
-                   | special_assign"""
+                   | '_' matrix_assignment %prec UMINUS
+                   | special_assign
+                   | '-' special_assign %prec UMINUS """
 
-# rozpisz sobie przypisywanie i zobaczymy jak to wygląda
+
 def p_matrix_assignment(p):
-    """ matrix_assignment : matrix_expression
+    """ matrix_assignment : expression
                           | '[' row_list ']' """
 
-def p_matrix_expression(p):
-    """ matrix_expression : matrix_expression binop matrix_expression
-                          | matrix_expression matrix_binop matrix_expression
-                          | matrix_expression
-                          | matrix_expression "'" %prec TRANSPOSE
-                          | '(' matrix_expression ')'
-                          | var_expression
-                          | ID """
 
-def p_binop(p):
-    """ binop : '+'
-              | '-'
-              | '*'
-              | '/' """
+def p_expression(p):
+    """ expression : expression '+' expression %prec '+'
+                    | expression '-' expression %prec '-'
+                    | expression '/' expression %prec '/'
+                    | expression '*' expression %prec '*'
+                    | expression ADDMATRIX expression %prec ADDMATRIX
+                    | expression SUBMATRIX expression %prec SUBMATRIX
+                    | expression DIVMATRIX expression %prec DIVMATRIX
+                    | expression MULMATRIX expression %prec MULMATRIX
+                    | expression "'" %prec TRANSPOSE
+                    | '(' expression ')'
+                    | ID
+                    | number """
 
-
-def p_matrix_binop(p):
-    """ matrix_binop : ADDMATRIX
-                     | SUBMATRIX
-                     | MULMATRIX
-                     | DIVMATRIX """
 
 
 def p_special_assign(p):
@@ -136,17 +130,10 @@ def p_number(p):
     """ number : INTNUM
                | FLOAT"""
 
-
-def p_var_expression(p):
-    """ var_expression : var_expression binop var_expression
-                       | '(' var_expression ')'
-                       | number
-                       | ID """
-
 def p_sys_function(p):
     """ sys_function : PRINT print_block
                      | BREAK
-                     | RETURN var_expression
+                     | RETURN expression
                      | CONTINUE """
 
 
@@ -176,7 +163,7 @@ def p_for_specifier(p):
 
 
 def p_comparison(p):
-    """ comparison : var_expression comp_device var_expression"""
+    """ comparison : expression comp_device expression"""
 
 def p_comp_device(p):
     """comp_device : LEQUAL
@@ -188,8 +175,7 @@ def p_comp_device(p):
 
 def p_branch(p):
     """ branch : IF '(' comparison ')' instruction %prec IFX
-               | IF '(' comparison ')' instruction ELSE branch
-               | IF '(' comparison ')' instruction ELSE instruction"""
+               | IF '(' comparison ')' instruction ELSE instruction """
 
 
 
