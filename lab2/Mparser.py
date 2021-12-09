@@ -80,7 +80,7 @@ def p_matrix_id(p):
 #przenieść uminus
 def p_ass_option(p):
     """ ass_option : matrix_assignment
-                   | '_' matrix_assignment %prec UMINUS
+                   | '-' matrix_assignment %prec UMINUS
                    | special_assign
                    | '-' special_assign %prec UMINUS """
 
