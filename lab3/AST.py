@@ -24,9 +24,18 @@ class BinExpr(Node):
         self.right = right
 
 
-# ...
-# fill out missing classes
-# ...
+class Program(Node):
+    def __init__(self, instructions=None):
+        self.instructions = instructions
+
+
+class Instructions(Node):
+    def __init__(self, instruction):
+        if hasattr(instruction, '__len__'):
+            self.instructions = instruction
+        else:
+            self.instructions = [instruction]
+
 
 class Error(Node):
     def __init__(self):
