@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import Lab1.scanner as scanner
+import lab2.scanner as scanner
 import ply.yacc as yacc
 
 tokens = scanner.tokens + list(scanner.literals)
@@ -34,13 +34,16 @@ def p_instructions_opt_1(p):
     """ instructions_opt : instructions """
     p[0] = p[1]
 
+
 def p_instructions_opt_2(p):
     """ instructions_opt : """
     p[0] = p[1]
 
+
 def p_instructions_1(p):
     """ instructions : instructions instruction """
     p[0] = p[1], p[2]
+
 
 def p_instructions_2(p):
     """ instructions : instruction """
@@ -61,6 +64,7 @@ def p_block_of_code(p):
 def p_assignment(p):
     """ assignment : identificator ass_operation ass_option"""
 
+
 def p_ass_operation(p):
     """ ass_operation : '='
                       | ADDASSIGN
@@ -77,7 +81,7 @@ def p_identificator(p):
 def p_matrix_id(p):
     """ matrix_id : ID '[' INTNUM ',' INTNUM ']'"""
 
-#przenieść uminus
+
 def p_ass_option(p):
     """ ass_option : matrix_assignment
                    | '-' matrix_assignment %prec UMINUS
@@ -105,7 +109,6 @@ def p_expression(p):
                     | number """
 
 
-
 def p_special_assign(p):
     """ special_assign : fun_name '(' INTNUM ')'"""
 
@@ -115,20 +118,25 @@ def p_fun_name(p):
                  | ZEROS
                  | ONES"""
 
+
 def p_row_list(p):
     """ row_list : row
                  | row_list ',' row"""
 
+
 def p_row(p):
     """row : '[' num_list ']' """
+
 
 def p_num_list(p):
     """ num_list : number
                  | num_list ',' number """
 
+
 def p_number(p):
     """ number : INTNUM
                | FLOAT"""
+
 
 def p_sys_function(p):
     """ sys_function : PRINT print_block
@@ -148,6 +156,7 @@ def p_loop(p):
     """ loop : for_loop
              | while_loop"""
 
+
 def p_while_loop(p):
     """ while_loop : WHILE '(' comparison ')' instruction"""
 
@@ -165,6 +174,7 @@ def p_for_specifier(p):
 def p_comparison(p):
     """ comparison : expression comp_device expression"""
 
+
 def p_comp_device(p):
     """comp_device : LEQUAL
                    | GREQUAL
@@ -173,10 +183,10 @@ def p_comp_device(p):
                    | '<'
                    | '>' """
 
+
 def p_branch(p):
     """ branch : IF '(' comparison ')' instruction %prec IFX
                | IF '(' comparison ')' instruction ELSE instruction """
-
 
 
 parser = yacc.yacc()
