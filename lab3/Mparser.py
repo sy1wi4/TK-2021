@@ -69,24 +69,22 @@ def p_block_of_code(p):
 
 
 def p_assignment(p):
-    """ assignment : identificator ass_operation ass_option"""
+    """ assignment : identifier '=' ass_option
+                   | identifier ADDASSIGN ass_option
+                   | identifier SUBASSIGN ass_option
+                   | identifier MULASSIGN ass_option
+                   | identifier DIVASSIGN ass_option"""
+
+    p[0] = AST.Assignment(p[2], p[1], p[3])
 
 
-def p_ass_operation(p):
-    """ ass_operation : '='
-                      | ADDASSIGN
-                      | SUBASSIGN
-                      | MULASSIGN
-                      | DIVASSIGN  """
-
-
-def p_identificator(p):
-    """ identificator : matrix_id
-                      | ID"""
-
-
-def p_matrix_id(p):
-    """ matrix_id : ID '[' INTNUM ',' INTNUM ']'"""
+def p_identifier(p):
+    """ identifier : ID row
+                  | ID"""
+    if len(p) == 2:
+        p[0] = AST.Variable(p[1])
+    else:
+        p[0] = AST.Slice(p[1], p[2])
 
 
 def p_ass_option(p):
@@ -94,14 +92,20 @@ def p_ass_option(p):
                    | '-' matrix_assignment %prec UMINUS
                    | special_assign
                    | '-' special_assign %prec UMINUS """
+    p[0] = p[1]
+    # TODO: '-'
 
 
 def p_matrix_assignment(p):
     """ matrix_assignment : expression
                           | '[' row_list ']' """
+    if len(p) == 2:
+        p[0] = p[1]
+    else:
+        p[0] = p[2]
 
 
-def p_expression(p):
+def p_expression_1(p):
     """ expression : expression '+' expression %prec '+'
                     | expression '-' expression %prec '-'
                     | expression '/' expression %prec '/'
@@ -110,76 +114,134 @@ def p_expression(p):
                     | expression SUBMATRIX expression %prec SUBMATRIX
                     | expression DIVMATRIX expression %prec DIVMATRIX
                     | expression MULMATRIX expression %prec MULMATRIX
-                    | expression "'" %prec TRANSPOSE
-                    | '(' expression ')'
-                    | ID
-                    | number """
+                    | expression "'" %prec TRANSPOSE"""
+
+    # TODO: A.+B' -> transpozycja do calego wyrazenia, a nie tylko B, why???
+    if len(p) == 3:
+        p[0] = AST.UnaryExpr('TRANSPOSE', p[1])
+    else:
+        p[0] = AST.BinExpr(p[2], p[1], p[3])
+
+
+def p_expression_2(p):
+    """ expression : ID"""
+    p[0] = AST.Variable(p[1])
+
+
+def p_expression_3(p):
+    """ expression : number"""
+    p[0] = p[1]
+
+
+def p_expression_4(p):
+    """ expression : '(' expression ')'"""
+    p[0] = p[2]
 
 
 def p_special_assign(p):
-    """ special_assign : fun_name '(' INTNUM ')'"""
-
-
-def p_fun_name(p):
-    """ fun_name : EYE
-                 | ZEROS
-                 | ONES"""
+    """ special_assign : EYE '(' INTNUM ')'
+                       | ZEROS '(' INTNUM ')'
+                       | ONES '(' INTNUM ')' """
+    p[0] = AST.Function(p[1], p[3])
 
 
 def p_row_list(p):
     """ row_list : row
                  | row_list ',' row"""
+    if len(p) == 2:
+        p[0] = AST.Row(p[1])
+    else:
+        p[0] = p[1]
+        p[0].values += [p[3]]
 
 
 def p_row(p):
     """row : '[' num_list ']' """
+    p[0] = p[2]
 
 
 def p_num_list(p):
     """ num_list : number
                  | num_list ',' number """
 
+    if len(p) == 4:
+        p[0] = p[1]
+        p[0].values += [p[3]]
+    else:
+        p[0] = AST.Row(p[1])
+
 
 def p_number(p):
     """ number : INTNUM
                | FLOAT"""
+    if type(p[1]) == int:
+        p[0] = AST.IntNum(p[1])
+    else:
+        AST.FloatNum(p[1])
+
+
+# TODO: reszta sys
+def p_sys_function_1(p):
+    """ sys_function : PRINT print_block """
+    p[0] = AST.PrintF(p[2])
 
 
 def p_sys_function(p):
-    """ sys_function : PRINT print_block
-                     | BREAK
+    """ sys_function : BREAK
                      | RETURN expression
                      | CONTINUE """
 
 
-def p_print_block(p):
+# TODO: printowanie wiecej niz 1, stringi
+
+def p_print_block_1(p):
     """ print_block : print_block ',' ID
-                    | print_block ',' STRING
-                    | STRING
-                    | ID """
+                    | print_block ',' STRING """
+    p[0] = p[1]
+
+
+def p_print_block_2(p):
+    """ print_block : STRING"""
+
+
+def p_print_block_3(p):
+    """ print_block : ID """
+    p[0] = AST.Variable(p[1])
 
 
 def p_loop(p):
     """ loop : for_loop
              | while_loop"""
-
-
-def p_while_loop(p):
-    """ while_loop : WHILE '(' comparison ')' instruction"""
+    p[0] = p[1]
 
 
 def p_for_loop(p):
-    """ for_loop : FOR for_specifier instruction """
+    """ for_loop : FOR ID '=' range ':' range instruction """
+    p[0] = AST.ForLoop(AST.Variable(p[2]), p[4], p[6], p[7])
 
 
-def p_for_specifier(p):
-    """ for_specifier : ID '=' INTNUM ':' INTNUM
-                      | ID '=' INTNUM ':' ID
-                      | ID '=' ID ':' ID """
+def p_range(p):
+    """ range : ID
+              | INTNUM"""
+
+    if type(p[1]) == int:
+        p[0] = AST.IntNum(p[1])
+    else:
+        p[0] = AST.Variable(p[1])
 
 
-def p_comparison(p):
-    """ comparison : expression comp_device expression"""
+def p_while_loop(p):
+    """ while_loop : WHILE '(' expression comp_device expression ')' instruction"""
+    p[0] = AST.WhileLoop(AST.BinExpr(p[4], p[3], p[5]), p[7])
+
+
+def p_branch(p):
+    """ branch : IF '(' expression comp_device expression ')' instruction %prec IFX
+               | IF '(' expression comp_device expression ')' instruction ELSE instruction """
+    if len(p) == 8:
+        p[0] = AST.IfStatement(AST.BinExpr(p[4], p[3], p[5]), p[7])
+    else:
+        p[0] = AST.IfStatement(AST.BinExpr(p[4], p[3], p[5]), p[7], p[9])
 
 
 def p_comp_device(p):
@@ -189,11 +251,7 @@ def p_comp_device(p):
                    | EQUALS
                    | '<'
                    | '>' """
-
-
-def p_branch(p):
-    """ branch : IF '(' comparison ')' instruction %prec IFX
-               | IF '(' comparison ')' instruction ELSE instruction """
+    p[0] = p[1]
 
 
 parser = yacc.yacc()
