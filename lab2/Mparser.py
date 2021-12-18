@@ -10,9 +10,9 @@ precedence = (
     ("nonassoc", 'IFX'),
     ("nonassoc", 'ELSE'),
     ("left", '<', '>', 'LEQUAL', 'GREQUAL', 'DIFFERS', 'EQUALS'),
+    ("left", 'TRANSPOSE'),
     ("left", '+', '-', 'ADDMATRIX', 'SUBMATRIX'),
     ("left", '*', '/', 'MULMATRIX', 'DIVMATRIX'),
-    ("left", 'TRANSPOSE'),
     ("left", 'UMINUS'),
     # to fill ...
 )
