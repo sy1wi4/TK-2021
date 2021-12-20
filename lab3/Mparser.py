@@ -1,17 +1,20 @@
-import lab3.scanner as scanner
+#!/usr/bin/python
+
 import ply.yacc as yacc
+
+import AST
+import lab3.scanner as scanner
 
 tokens = scanner.tokens + list(scanner.literals)
 
 precedence = (
-    # to fill ...
-    ("left", '+', '-'),
-    ("left", '*', '/'),
-    ("left", 'TRANSPOSE'),
-    ("right", 'UMINUS'),
     ("nonassoc", 'IFX'),
     ("nonassoc", 'ELSE'),
-    # to fill ...
+    ("left", '<', '>', 'LEQUAL', 'GREQUAL', 'DIFFERS', 'EQUALS'),
+    ("left", '+', '-', 'ADDMATRIX', 'SUBMATRIX'),
+    ("left", '*', '/', 'MULMATRIX', 'DIVMATRIX'),
+    ("left", 'TRANSPOSE'),
+    ("left", 'UMINUS'),
 )
 
 
@@ -24,190 +27,222 @@ def p_error(p):
 
 def p_program(p):
     """program : instructions_opt"""
+    p[0] = p[1]
 
 
 def p_instructions_opt_1(p):
     """instructions_opt : instructions """
+    p[0] = AST.Program(p[1])
 
 
 def p_instructions_opt_2(p):
     """instructions_opt : """
+    p[0] = AST.Program()
 
 
 def p_instructions_1(p):
     """instructions : instructions instruction """
+    p[0] = p[1]
+    p[0].instructions += [p[2]]
 
 
 def p_instructions_2(p):
     """instructions : instruction """
+    if isinstance(p[1], AST.Instructions):
+        p[0] = p[1]
+    else:
+        p[0] = AST.Instructions(p[1])
+
 
 def p_instruction(p):
     """ instruction : assignment ';'
                     | branch
                     | loop
-                    | block_of_code"""
+                    | block_of_code
+                    | sys_function ';' """
+    p[0] = p[1]
+
+
+def p_block_of_code(p):
+    """ block_of_code : '{' instructions '}' """
+    p[0] = p[2]
+
 
 def p_assignment(p):
-    """ assignment : matrix_assignment
-                   | uminus_matrix
-                   | variable_assignment
-                   | uminus_variable
-                   | row_col_assignment
-                   | uminus_row_col
-                   | id_assignment
-                   | uminus_id
-                   | special_assign"""
+    """ assignment : identifier '=' ass_option
+                   | identifier ADDASSIGN ass_option
+                   | identifier SUBASSIGN ass_option
+                   | identifier MULASSIGN ass_option
+                   | identifier DIVASSIGN ass_option"""
 
-def p_uminus_matrix(p):
-    """ uminus_matrix : ID '=' '-' transposing %prec UMINUS """
+    p[0] = AST.Assignment(p[2], p[1], p[3])
+
+
+def p_identifier(p):
+    """ identifier : ID row
+                  | ID"""
+    if len(p) == 2:
+        p[0] = AST.Variable(p[1])
+    else:
+        p[0] = AST.Slice(p[1], p[2])
+
+
+def p_ass_option(p):
+    """ ass_option : matrix_assignment
+                   | '-' matrix_assignment %prec UMINUS
+                   | special_assign
+                   | '-' special_assign %prec UMINUS """
+    p[0] = p[1]
+    # TODO: '-'
+
 
 def p_matrix_assignment(p):
-    """ matrix_assignment : ID '=' transposing"""
+    """ matrix_assignment : expression
+                          | '[' row_list ']' """
+    if len(p) == 2:
+        p[0] = p[1]
+    else:
+        p[0] = p[2]
 
-def p_transposing(p):
-    """transposing : transpose
-                   | m_ass_option"""
 
-def p_transpose(p):
-    """transpose : m_ass_option "'" %prec TRANSPOSE """
+def p_expression_1(p):
+    """ expression : expression '+' expression %prec '+'
+                    | expression '-' expression %prec '-'
+                    | expression '/' expression %prec '/'
+                    | expression '*' expression %prec '*'
+                    | expression ADDMATRIX expression %prec ADDMATRIX
+                    | expression SUBMATRIX expression %prec SUBMATRIX
+                    | expression DIVMATRIX expression %prec DIVMATRIX
+                    | expression MULMATRIX expression %prec MULMATRIX
+                    | expression "'" %prec TRANSPOSE"""
 
-def p_m_ass_option(p):
-    """ m_ass_option : function
-                     | '[' row_list ']'  """
-def p_function(p):
-    """ function : fun_name '(' INTNUM ')' """
+    # TODO: A.+B' -> transpozycja do calego wyrazenia, a nie tylko B, why???
+    if len(p) == 3:
+        p[0] = AST.UnaryExpr('TRANSPOSE', p[1])
+    else:
+        p[0] = AST.BinExpr(p[2], p[1], p[3])
 
-def p_fun_name(p):
-    """ fun_name : EYE
-                 | ZEROS
-                 | ONES"""
+
+def p_expression_2(p):
+    """ expression : ID"""
+    p[0] = AST.Variable(p[1])
+
+
+def p_expression_3(p):
+    """ expression : number"""
+    p[0] = p[1]
+
+
+def p_expression_4(p):
+    """ expression : '(' expression ')'"""
+    p[0] = p[2]
+
+
+def p_special_assign(p):
+    """ special_assign : EYE '(' INTNUM ')'
+                       | ZEROS '(' INTNUM ')'
+                       | ONES '(' INTNUM ')' """
+    p[0] = AST.Function(p[1], p[3])
+
 
 def p_row_list(p):
     """ row_list : row
                  | row_list ',' row"""
+    if len(p) == 2:
+        p[0] = AST.Row(p[1])
+    else:
+        p[0] = p[1]
+        p[0].values += [p[3]]
+
 
 def p_row(p):
     """row : '[' num_list ']' """
+    p[0] = p[2]
+
 
 def p_num_list(p):
     """ num_list : number
                  | num_list ',' number """
 
+    if len(p) == 4:
+        p[0] = p[1]
+        p[0].values += [p[3]]
+    else:
+        p[0] = AST.Row(p[1])
+
+
 def p_number(p):
     """ number : INTNUM
                | FLOAT"""
-
-def p_variable_assignment(p):
-    """ variable_assignment : ID '=' math_expression"""
-
-def p_uminus_variable(p):
-    """ uminus_variable : ID '=' '-' math_expression %prec UMINUS """
-
-def p_row_col_assignment(p):
-    """ row_col_assignment : matrix_id '=' math_expression """
-
-def p_uminus_row_col(p):
-    """ uminus_row_col : matrix_id '=' '-' math_expression %prec UMINUS """
-
-def p_matrix_id(p):
-    """matrix_id : ID '[' INTNUM ',' INTNUM ']' """
-
-def p_id_assignment(p):
-    """ id_assignment : ID '=' id_expression"""
-
-def p_uminus_id(p):
-    """ uminus_id : ID '=' '-' id_expression %prec UMINUS"""
-
-def p_id_expression(p):
-    """ id_expression : dot_expr""" #
-
-def p_dot_exp(p):
-    """ dot_expr : dot_expr ADDMATRIX dot_mul_expr
-                 | dot_expr SUBMATRIX dot_mul_expr
-                 | dot_mul_expr
-                 | '(' bin_expr ')' """
-
-def p_dot_mul_expr(p):
-    """ dot_mul_expr : dot_mul_expr MULMATRIX bin_expr
-                     | dot_mul_expr DIVMATRIX bin_expr
-                     | bin_expr"""
-
-def p_bin_expr(p):
-    """ bin_expr : bin_expr '+' bin_mul_expr
-                 | bin_expr '-' bin_mul_expr
-                 | bin_mul_expr"""
-
-def p_bin_mul_expr(p):
-    """ bin_mul_expr : bin_mul_expr '*' id_transpose
-                     | bin_mul_expr '/' id_transpose
-                     | number
-                     | id_transpose"""
-
-def p_id_transpose(p):
-    """ id_transpose : ID "'" %prec TRANSPOSE
-                     | ID """
-
-def p_special_assign(p):
-    """ special_assign : ID special_operation id_expression"""
-
-def p_special_operation(p):
-    """ special_operation : ADDASSIGN
-                          | SUBASSIGN
-                          | MULASSIGN
-                          | DIVASSIGN"""
-
-def p_math_expression(p):
-    """math_expression : math_expression '+' mul_math_expr
-                       | math_expression '-' mul_math_expr
-                       | mul_math_expr"""
-
-def p_mul_math_expr(p):
-    """ mul_math_expr : mul_math_expr '*' number
-                     | mul_math_expr '/' number
-                     | '(' math_expression ')'
-                     | number
-                     | ID"""
+    if type(p[1]) == int:
+        p[0] = AST.IntNum(p[1])
+    else:
+        AST.FloatNum(p[1])
 
 
-def p_block_of_code(p):
-    """block_of_code : '{' block_operations '}' """
-
-def p_block_operations(p):
-    """block_operations : block_operation
-                        | block_operations block_operation"""
+# TODO: reszta sys
+def p_sys_function_1(p):
+    """ sys_function : PRINT print_block """
+    p[0] = AST.PrintF(p[2])
 
 
-def p_block_operation(p):
-    """ block_operation : assignment ';'
-                        | branch
-                        | io_function ';' """
+def p_sys_function(p):
+    """ sys_function : BREAK
+                     | RETURN expression
+                     | CONTINUE """
 
-def p_io_function(p):
-    """ io_function : PRINT print_block
-                    | BREAK
-                    | RETURN math_expression
-                    | CONTINUE """
 
-def p_print_block(p):
-    """print_block : STRING
-                   | id_chain"""
+# TODO: printowanie wiecej niz 1, stringi
 
-def p_id_chain(p):
-    """ id_chain : ID
-                 | id_chain ',' ID"""
+def p_print_block_1(p):
+    """ print_block : print_block ',' ID
+                    | print_block ',' STRING """
+    p[0] = p[1]
+
+
+def p_print_block_2(p):
+    """ print_block : STRING"""
+
+
+def p_print_block_3(p):
+    """ print_block : ID """
+    p[0] = AST.Variable(p[1])
+
+
+def p_loop(p):
+    """ loop : for_loop
+             | while_loop"""
+    p[0] = p[1]
+
+
+def p_for_loop(p):
+    """ for_loop : FOR ID '=' range ':' range instruction """
+    p[0] = AST.ForLoop(AST.Variable(p[2]), p[4], p[6], p[7])
+
+
+def p_range(p):
+    """ range : ID
+              | INTNUM"""
+
+    if type(p[1]) == int:
+        p[0] = AST.IntNum(p[1])
+    else:
+        p[0] = AST.Variable(p[1])
+
+
+def p_while_loop(p):
+    """ while_loop : WHILE '(' expression comp_device expression ')' instruction"""
+    p[0] = AST.WhileLoop(AST.BinExpr(p[4], p[3], p[5]), p[7])
+
 
 def p_branch(p):
-    """ branch : IF '(' comparison ')' if_block %prec IFX
-               | IF '(' comparison ')' if_block ELSE branch
-               | IF '(' comparison ')' if_block ELSE if_block"""
+    """ branch : IF '(' expression comp_device expression ')' instruction %prec IFX
+               | IF '(' expression comp_device expression ')' instruction ELSE instruction """
+    if len(p) == 8:
+        p[0] = AST.IfStatement(AST.BinExpr(p[4], p[3], p[5]), p[7])
+    else:
+        p[0] = AST.IfStatement(AST.BinExpr(p[4], p[3], p[5]), p[7], p[9])
 
-def p_if_block(p):
-    """ if_block : block_of_code
-                 | assignment ';'
-                 | io_function ';'  """
-
-def p_comparison(p):
-    """ comparison : ID comp_device math_expression"""
 
 def p_comp_device(p):
     """comp_device : LEQUAL
@@ -216,40 +251,7 @@ def p_comp_device(p):
                    | EQUALS
                    | '<'
                    | '>' """
-
-def p_loop(p):
-    """ loop : for_loop
-             | while_loop"""
-
-def p_while_loop(p):
-    """ while_loop : WHILE '(' comparison ')' while_code"""
-
-def p_while_code(p):
-    """ while_code : block_of_code
-                   | loop
-                   | branch
-                   | assignment ';'
-                   | io_function ';' """
-
-def p_for_loop(p):
-    """ for_loop : FOR for_specifier for_block"""
-
-
-def p_for_specifier(p):
-    """ for_specifier : ID '=' INTNUM ':' INTNUM
-                      | ID '=' INTNUM ':' ID
-                      | ID '=' ID ':' ID """
-
-def p_for_block(p):
-    """ for_block : block_of_code
-                   | loop
-                   | branch
-                   | assignment ';'
-                   | io_function ';' """
-
-# to finish the grammar
-# ....
+    p[0] = p[1]
 
 
 parser = yacc.yacc()
-
