@@ -1,5 +1,14 @@
 #!/usr/bin/python
-import AST
+from lab4 import AST
+
+
+def semantic_error(line, message):
+    print(f"There is an error: { message } at line no. {line}" )
+
+
+def printTheError(line, error_mess):
+    semantic_error(line, error_mess)
+
 
 class NodeVisitor(object):
 
@@ -45,14 +54,33 @@ class TypeChecker(NodeVisitor):
         for instr in node.instructions:
             self.visit(instr)
 
-    def visit_Matrix(selfself, node):
-        pass
+    def visit_row_list(self, node):
+        print(" I am going ")
+        dim_0 = len(node.rows)
+        dim_1 = None
+        for sublist in node.rows:
+            len_o_sublist = self.visit(sublist)[1]
+            if dim_1 is None:
+                dim_1 = len_o_sublist
+            elif dim_1 != len_o_sublist:
+                semantic_error(node.lineno, " Unmatching lengths of submatrix")
+        return "Typ_Macierzowy", (dim_0, dim_1)
 
     def visit_Variable(self, node):
         pass
 
 
-    def visit_row(self, node):
+    def visit_Assignment(self, node):
+        operator = node.op
+        self.visit(node.right)
+
+
+
+    def visit_Row(self, node):
+        print(node.__class__.__name__)
+        type = node.values.__class__.__name__
+
+
 
 
 

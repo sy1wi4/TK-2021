@@ -64,6 +64,15 @@ class Slice(Node):
         self.vector = vector
 
 
+class row_list(Node):
+    def __init__(self, row):
+        super().__init__()
+        if row is None:
+            self.rows = []
+        else:
+            self.rows = [row]
+
+
 class Row(Node):
     def __init__(self, value=None):
         super().__init__()
