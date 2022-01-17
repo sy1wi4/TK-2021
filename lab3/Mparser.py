@@ -116,7 +116,6 @@ def p_expression_1(p):
                     | expression MULMATRIX expression %prec MULMATRIX
                     | expression "'" %prec TRANSPOSE"""
 
-    # TODO: A.+B' -> transpozycja do calego wyrazenia, a nie tylko B, why???
     if len(p) == 3:
         p[0] = AST.UnaryExpr('TRANSPOSE', p[1])
     else:
