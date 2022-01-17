@@ -2,7 +2,7 @@
 
 import ply.yacc as yacc
 
-import AST
+from lab3 import AST
 import lab3.scanner as scanner
 
 tokens = scanner.tokens + list(scanner.literals)
@@ -89,20 +89,22 @@ def p_identifier(p):
 
 def p_ass_option(p):
     """ ass_option : matrix_assignment
-                   | '-' matrix_assignment %prec UMINUS
-                   | special_assign
-                   | '-' special_assign %prec UMINUS """
+                   | special_assign"""
     p[0] = p[1]
-    # TODO: '-'
-
 
 def p_matrix_assignment(p):
     """ matrix_assignment : expression
+                          | expr_unary
                           | '[' row_list ']' """
     if len(p) == 2:
         p[0] = p[1]
     else:
         p[0] = p[2]
+
+def p_expr_unary(p):
+    """ expr_unary : '-' expression %prec UMINUS
+                    | expression "'" %prec TRANSPOSE """
+
 
 
 def p_expression_1(p):
