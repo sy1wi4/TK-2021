@@ -107,7 +107,6 @@ def p_expression(p):
                     | expression SUBMATRIX expression %prec SUBMATRIX
                     | expression DIVMATRIX expression %prec DIVMATRIX
                     | expression MULMATRIX expression %prec MULMATRIX
-                    | expression "'" %prec TRANSPOSE
                     | '(' expression ')'
                     | ID
                     | number """
