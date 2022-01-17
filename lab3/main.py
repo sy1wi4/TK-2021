@@ -1,6 +1,6 @@
 import sys
-import Mparser
-import TreePrinter
+from lab3 import Mparser
+from lab3 import TreePrinter
 
 if __name__ == '__main__':
 

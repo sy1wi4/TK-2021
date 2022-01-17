@@ -13,8 +13,8 @@ precedence = (
     ("left", '<', '>', 'LEQUAL', 'GREQUAL', 'DIFFERS', 'EQUALS'),
     ("left", '+', '-', 'ADDMATRIX', 'SUBMATRIX'),
     ("left", '*', '/', 'MULMATRIX', 'DIVMATRIX'),
-    ("left", 'TRANSPOSE'),
     ("left", 'UMINUS'),
+    ("right", 'TRANSPOSE'),
 )
 
 
@@ -88,23 +88,21 @@ def p_identifier(p):
 
 
 def p_ass_option(p):
-    """ ass_option : matrix_assignment
+    """ ass_option : matrix
+                   | expression
+                   | expr_unary
+                   | row
                    | special_assign"""
     p[0] = p[1]
 
-def p_matrix_assignment(p):
-    """ matrix_assignment : expression
-                          | expr_unary
-                          | '[' row_list ']' """
-    if len(p) == 2:
-        p[0] = p[1]
-    else:
-        p[0] = p[2]
+
+def p_matrix(p):
+    """ matrix : '[' row_list ']' """
+    p[0] = p[2]
 
 def p_expr_unary(p):
-    """ expr_unary : '-' expression %prec UMINUS
-                    | expression "'" %prec TRANSPOSE """
-
+    """ expr_unary : '-' expression %prec UMINUS"""
+    p[0] = - p[2]
 
 
 def p_expression_1(p):
@@ -116,10 +114,10 @@ def p_expression_1(p):
                     | expression SUBMATRIX expression %prec SUBMATRIX
                     | expression DIVMATRIX expression %prec DIVMATRIX
                     | expression MULMATRIX expression %prec MULMATRIX
-                    | expression "'" %prec TRANSPOSE"""
+                    | expression "\\'" %prec TRANSPOSE"""
 
     # TODO: A.+B' -> transpozycja do calego wyrazenia, a nie tylko B, why???
-    if len(p) == 3:
+    if p[len(p)-1] == "\'":
         p[0] = AST.UnaryExpr('TRANSPOSE', p[1])
     else:
         p[0] = AST.BinExpr(p[2], p[1], p[3])
