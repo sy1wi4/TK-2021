@@ -3,7 +3,7 @@
 import ply.yacc as yacc
 
 import AST
-import lab3.scanner as scanner
+import scanner
 
 tokens = scanner.tokens + list(scanner.literals)
 
@@ -13,8 +13,8 @@ precedence = (
     ("left", '<', '>', 'LEQUAL', 'GREQUAL', 'DIFFERS', 'EQUALS'),
     ("left", '+', '-', 'ADDMATRIX', 'SUBMATRIX'),
     ("left", '*', '/', 'MULMATRIX', 'DIVMATRIX'),
-    ("left", 'TRANSPOSE'),
     ("left", 'UMINUS'),
+    ("right", 'TRANSPOSE'),
 )
 
 
@@ -86,23 +86,24 @@ def p_identifier(p):
     else:
         p[0] = AST.Slice(p[1], p[2])
 
-
+# tu by była zmiana
 def p_ass_option(p):
-    """ ass_option : matrix_assignment
-                   | '-' matrix_assignment %prec UMINUS
-                   | special_assign
-                   | '-' special_assign %prec UMINUS """
+    """ ass_option : matrix
+                   | expression
+                   | expr_unary
+                   | row
+                   | special_assign"""
     p[0] = p[1]
-    # TODO: '-'
 
 
-def p_matrix_assignment(p):
-    """ matrix_assignment : expression
-                          | '[' row_list ']' """
-    if len(p) == 2:
-        p[0] = p[1]
-    else:
-        p[0] = p[2]
+def p_matrix(p):
+    """ matrix : '[' row_list ']' """
+    p[0] = p[2]
+
+
+def p_expr_unary(p):
+    """ expr_unary : '-' expression %prec UMINUS"""
+    p[0] = - p[2]
 
 
 def p_expression_1(p):
@@ -114,10 +115,10 @@ def p_expression_1(p):
                     | expression SUBMATRIX expression %prec SUBMATRIX
                     | expression DIVMATRIX expression %prec DIVMATRIX
                     | expression MULMATRIX expression %prec MULMATRIX
-                    | expression "'" %prec TRANSPOSE"""
+                    | expression "\\'" %prec TRANSPOSE"""
 
     # TODO: A.+B' -> transpozycja do calego wyrazenia, a nie tylko B, why???
-    if len(p) == 3:
+    if p[len(p)-1] == "\'":
         p[0] = AST.UnaryExpr('TRANSPOSE', p[1])
     else:
         p[0] = AST.BinExpr(p[2], p[1], p[3])
@@ -149,10 +150,10 @@ def p_row_list(p):
     """ row_list : row
                  | row_list ',' row"""
     if len(p) == 2:
-        p[0] = AST.Row(p[1])
+        p[0] = AST.Matrix(p[1])
     else:
         p[0] = p[1]
-        p[0].values += [p[3]]
+        p[0].rows += [p[3]]
 
 
 def p_row(p):

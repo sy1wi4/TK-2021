@@ -4,6 +4,7 @@ class Node(object):
     def __init__(self, children=None):
         self.ID = str(Node.count)
         Node.count += 1
+        self.lineno = None
 
         if not children:
             self.children = []
@@ -43,6 +44,12 @@ class FloatNum(Node):
         self.value = value
 
 
+class String(Node):
+    def __init__(self, value):
+        super().__init__()
+        self.value = value
+
+
 class Assignment(Node):
     def __init__(self, op, left, right):
         super().__init__()
@@ -64,7 +71,13 @@ class Slice(Node):
         self.vector = vector
 
 
-class row_list(Node):
+class Matrix(Node):
+    def __init__(self, rows):
+        super().__init__()
+        self.rows = [rows]
+
+
+class Row_list(Node):
     def __init__(self, row):
         super().__init__()
         if row is None:
