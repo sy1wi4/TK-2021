@@ -96,10 +96,10 @@ class Row(Node):
 
 
 class Function(Node):
-    def __init__(self, function, arg):
+    def __init__(self, function, args):
         super().__init__()
         self.function = function
-        self.arg = arg
+        self.args = args
 
 
 class BinExpr(Node):
@@ -147,3 +147,5 @@ class PrintF(Node):
     def __init__(self, expressions):
         super().__init__()
         self.expressions = expressions
+
+

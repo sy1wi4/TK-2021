@@ -63,7 +63,7 @@ def t_ID(t):
 def t_newline(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
-    print("NEWLINE", t.lexer.lineno)
+    # print("NEWLINE", t.lexer.lineno)
 
 
 def t_COMMENT(t):

@@ -86,13 +86,14 @@ def p_identifier(p):
     else:
         p[0] = AST.Slice(p[1], p[2])
 
-# tu by była zmiana
 def p_ass_option(p):
     """ ass_option : matrix
                    | expression
                    | expr_unary
                    | row
-                   | special_assign"""
+                   | special_assign
+                   | identifier
+                   """
     p[0] = p[1]
 
 
@@ -140,9 +141,9 @@ def p_expression_4(p):
 
 
 def p_special_assign(p):
-    """ special_assign : EYE '(' INTNUM ')'
-                       | ZEROS '(' INTNUM ')'
-                       | ONES '(' INTNUM ')' """
+    """ special_assign : EYE '(' num_list ')'
+                       | ZEROS '(' num_list ')'
+                       | ONES '(' num_list ')' """
     p[0] = AST.Function(p[1], p[3])
 
 
