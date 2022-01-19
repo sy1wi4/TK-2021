@@ -106,10 +106,12 @@ def p_matrix(p):
     p[0] = p[2]
     p[0].lineno = p.lineno(1)
 
+
 def p_expr_unary(p):
     """ expr_unary : '-' expression %prec UMINUS"""
     p[0] = - p[2]
     p[0].lineno = p.lineno(1)
+
 
 def p_expression_1(p):
     """ expression : expression '+' expression %prec '+'
@@ -122,19 +124,17 @@ def p_expression_1(p):
                     | expression MULMATRIX expression %prec MULMATRIX
                     | expression "\\'" %prec TRANSPOSE"""
 
-    if p[len(p)-1] == "\'":
+    if p[len(p) - 1] == "\'":
         p[0] = AST.UnaryExpr('TRANSPOSE', p[1])
     else:
         p[0] = AST.BinExpr(p[2], p[1], p[3])
         p[0].lineno = p.lineno(2)
 
 
-
 def p_expression_2(p):
     """ expression : ID"""
     p[0] = AST.Variable(p[1])
     p[0].lineno = p.lineno(1)
-
 
 
 def p_expression_3(p):
@@ -209,7 +209,6 @@ def p_sys_function(p):
     p[0].lineno = p.lineno(1)
 
 
-
 def p_print_block_1(p):
     """ print_block : print_block ',' ID
                     | print_block ',' STRING """
@@ -270,7 +269,6 @@ def p_comp_device(p):
                    | '>' """
     p[0] = p[1]
     p[0].lineno = p.lineno(2)
-
 
 
 parser = yacc.yacc()

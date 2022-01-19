@@ -1,7 +1,8 @@
 #!/usr/bin/python
+from typing import Union, Tuple
+
 from lab4 import AST
 from lab4 import SymbolTable
-from typing import Union, Tuple
 
 t_Int = 'Int'
 t_Float = 'Float'
@@ -174,7 +175,8 @@ class TypeChecker(NodeVisitor):
                     v = node.vector.values[i].value
                     d = dims[i].value
                     if v and d and (v < 0 or v >= d):
-                        semantic_error(node.lineno, f"Index {v} is out of range for matrix {symbol.name} with shape {d} at axis {i}")
+                        semantic_error(node.lineno,
+                                       f"Index {v} is out of range for matrix {symbol.name} with shape {d} at axis {i}")
 
         # vector
         elif symbol_type == t_Vector:
@@ -221,12 +223,13 @@ class TypeChecker(NodeVisitor):
                     elif op in {'+', '-'}:
                         if dims1 != dims2:
                             semantic_error(node.lineno,
-                                f'Cannot use {op} with matrices of incompatible shapes ({dims1[0].value}, {dims1[1].value}) and ({dims2[0].value}, {dims2[1].value})')
+                                           f'Cannot use {op} with matrices of incompatible shapes ({dims1[0].value}, {dims1[1].value}) and ({dims2[0].value}, {dims2[1].value})')
                         else:
                             return t_Matrix, dims1
                     elif op == '*':
                         if dims1[1] != dims2[0]:
-                            semantic_error(node.lineno, f'Cannot use {op} with matrices of incompatible shapes ({dims1[0].value}, {dims1[1].value}) and ({dims2[0].value}, {dims2[1].value})')
+                            semantic_error(node.lineno,
+                                           f'Cannot use {op} with matrices of incompatible shapes ({dims1[0].value}, {dims1[1].value}) and ({dims2[0].value}, {dims2[1].value})')
                         else:
                             return t_Matrix, (dims1[0], dims2[1])
                     elif op == '/':
@@ -236,7 +239,8 @@ class TypeChecker(NodeVisitor):
                     if type1 != type2:
                         semantic_error(node.lineno, f'Types {type1} and {type2} not compatible with {op}')
                     elif dims1 != dims2:
-                        semantic_error(node.lineno, f'Cannot use {op} with vectors of different lengths ({dims1} and {dims2})')
+                        semantic_error(node.lineno,
+                                       f'Cannot use {op} with vectors of different lengths ({dims1} and {dims2})')
                     else:
                         return t_Vector, dims1
 
@@ -249,7 +253,8 @@ class TypeChecker(NodeVisitor):
                 if type1 != t_Matrix or type2 != t_Matrix:
                     semantic_error(node.lineno, f'{type1} {type2} not compatible with {op}')
                 elif dims1 != dims2:
-                    semantic_error(node.lineno, f'Cannot use {op} with matricexs of incompatible shapes ({dims1} and {dims2})')
+                    semantic_error(node.lineno,
+                                   f'Cannot use {op} with matricexs of incompatible shapes ({dims1} and {dims2})')
 
         else:
             if type1 is None or type2 is None:
