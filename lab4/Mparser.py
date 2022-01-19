@@ -2,8 +2,8 @@
 
 import ply.yacc as yacc
 
-from lab3 import AST
-import lab3.scanner as scanner
+import AST
+import scanner
 
 tokens = scanner.tokens + list(scanner.literals)
 
@@ -76,6 +76,7 @@ def p_assignment(p):
                    | identifier DIVASSIGN ass_option"""
 
     p[0] = AST.Assignment(p[2], p[1], p[3])
+    p[0].lineno = p.lineno(2)
 
 
 def p_identifier(p):
@@ -86,23 +87,30 @@ def p_identifier(p):
     else:
         p[0] = AST.Slice(p[1], p[2])
 
+    p[0].lineno = p.lineno(1)
+
 
 def p_ass_option(p):
     """ ass_option : matrix
                    | expression
                    | expr_unary
                    | row
-                   | special_assign"""
+                   | special_assign
+                   | identifier
+                   """
     p[0] = p[1]
 
 
 def p_matrix(p):
     """ matrix : '[' row_list ']' """
     p[0] = p[2]
+    p[0].lineno = p.lineno(1)
+
 
 def p_expr_unary(p):
     """ expr_unary : '-' expression %prec UMINUS"""
     p[0] = - p[2]
+    p[0].lineno = p.lineno(1)
 
 
 def p_expression_1(p):
@@ -116,16 +124,17 @@ def p_expression_1(p):
                     | expression MULMATRIX expression %prec MULMATRIX
                     | expression "\\'" %prec TRANSPOSE"""
 
-    # TODO: A.+B' -> transpozycja do calego wyrazenia, a nie tylko B, why???
-    if p[len(p)-1] == "\'":
+    if p[len(p) - 1] == "\'":
         p[0] = AST.UnaryExpr('TRANSPOSE', p[1])
     else:
         p[0] = AST.BinExpr(p[2], p[1], p[3])
+        p[0].lineno = p.lineno(2)
 
 
 def p_expression_2(p):
     """ expression : ID"""
     p[0] = AST.Variable(p[1])
+    p[0].lineno = p.lineno(1)
 
 
 def p_expression_3(p):
@@ -139,20 +148,21 @@ def p_expression_4(p):
 
 
 def p_special_assign(p):
-    """ special_assign : EYE '(' INTNUM ')'
-                       | ZEROS '(' INTNUM ')'
-                       | ONES '(' INTNUM ')' """
+    """ special_assign : EYE '(' num_list ')'
+                       | ZEROS '(' num_list ')'
+                       | ONES '(' num_list ')' """
     p[0] = AST.Function(p[1], p[3])
+    p[0].lineno = p.lineno(1)
 
 
 def p_row_list(p):
     """ row_list : row
                  | row_list ',' row"""
     if len(p) == 2:
-        p[0] = AST.Row(p[1])
+        p[0] = AST.Matrix(p[1])
     else:
         p[0] = p[1]
-        p[0].values += [p[3]]
+        p[0].rows += [p[3]]
 
 
 def p_row(p):
@@ -191,8 +201,13 @@ def p_sys_function(p):
                      | RETURN expression
                      | CONTINUE """
 
+    if p[1] == "return":
+        p[0] = AST.ReturnStatement(p[2])
+    else:
+        p[0] = AST.ContBreakStatement(p[1])
 
-# TODO: printowanie wiecej niz 1, stringi
+    p[0].lineno = p.lineno(1)
+
 
 def p_print_block_1(p):
     """ print_block : print_block ',' ID
@@ -202,6 +217,7 @@ def p_print_block_1(p):
 
 def p_print_block_2(p):
     """ print_block : STRING"""
+    p[0] = AST.String(p[1])
 
 
 def p_print_block_3(p):
@@ -252,6 +268,7 @@ def p_comp_device(p):
                    | '<'
                    | '>' """
     p[0] = p[1]
+    p[0].lineno = p.lineno(2)
 
 
 parser = yacc.yacc()

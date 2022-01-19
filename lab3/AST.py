@@ -77,8 +77,6 @@ class BinExpr(Node):
         self.left = left
         self.right = right
 
-        self.children = [left, right]
-
 
 class UnaryExpr(Node):
     def __init__(self, op, operand):

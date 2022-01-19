@@ -84,14 +84,18 @@ def p_matrix_id(p):
 
 def p_ass_option(p):
     """ ass_option : matrix_assignment
-                   | '-' matrix_assignment %prec UMINUS
-                   | special_assign
-                   | '-' special_assign %prec UMINUS """
+                   | special_assign"""
 
 
 def p_matrix_assignment(p):
     """ matrix_assignment : expression
+                          | expr_unary
                           | '[' row_list ']' """
+
+
+def p_expr_unary(p):
+    """ expr_unary : '-' expression %prec UMINUS
+                   | expression "'" %prec TRANSPOSE """
 
 
 def p_expression(p):
@@ -103,7 +107,6 @@ def p_expression(p):
                     | expression SUBMATRIX expression %prec SUBMATRIX
                     | expression DIVMATRIX expression %prec DIVMATRIX
                     | expression MULMATRIX expression %prec MULMATRIX
-                    | expression "'" %prec TRANSPOSE
                     | '(' expression ')'
                     | ID
                     | number """
