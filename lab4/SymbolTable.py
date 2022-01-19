@@ -45,3 +45,5 @@ class SymbolTable(object):
             raise IOError("Don't pop BASE level")
         self.levels_stack.pop()
 
+    def inLoop(self):
+        return Levels.WHILE in self.levels_stack or Levels.FOR in self.levels_stack

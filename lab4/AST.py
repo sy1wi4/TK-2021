@@ -149,3 +149,21 @@ class PrintF(Node):
         self.expressions = expressions
 
 
+class ReturnStatement(Node):
+    def __init__(self, expression=None):
+        super().__init__()
+        self.expression = expression
+
+
+class ContBreakStatement(Node):
+    def __init__(self, statement):
+        super().__init__()
+        self.statement = statement
+
+
+class StringValue(Node):
+    def __init__(self, string):
+        super().__init__()
+        self.string = string
+
+

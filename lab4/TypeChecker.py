@@ -48,7 +48,7 @@ type_table = {
 
 
 def semantic_error(line, message):
-    print(f"There is an error: {message} at line no. {line}")
+    print(f"[Line {line}] {message}")
 
 
 def printTheError(line, error_mess):
@@ -75,24 +75,10 @@ class NodeVisitor(object):
                 elif isinstance(child, AST.Node):
                     self.visit(child)
 
-    # # simpler version of generic_visit, not so general
-    # def generic_visit(self, node):
-    #    for child in node.children:
-    #        self.visit(child)
-
 
 class TypeChecker(NodeVisitor):
     def __init__(self):
         self.symbol_table = SymbolTable.SymbolTable()
-
-    # def visit_BinExpr(self, node):
-    #     # alternative usage,
-    #     # requires definition of accept method in class Node
-    #     type1 = self.visit(node.left)  # type1 = node.left.accept(self)
-    #     type2 = self.visit(node.right)  # type2 = node.right.accept(self)
-    #     op = node.op
-    #     # ...
-    #     #
 
     def visit_Program(self, node):
         self.visit(node.instructions)
@@ -115,7 +101,7 @@ class TypeChecker(NodeVisitor):
         if t_of_variable is not None:
             return t_of_variable.type
         else:
-            semantic_error(node.lineo, f'Niezidentyfikowana zmienna {node.name}')
+            semantic_error(node.lineo, f'Unidentified variable {node.name}')
             return t_None
 
     def visit_Matrix(self, node):
@@ -136,22 +122,12 @@ class TypeChecker(NodeVisitor):
     def visit_Function(self, node):
         arg_types = self.visit(node.args)
         if arg_types[1] > 2:
-            semantic_error(node.lineno, f"Wrong number of arguments, expected 1 or 2, got {arg_types[1]}")
-
-        for i, value in enumerate(node.args.values):
-            # t = self.visit(value)
-            # if t != "Int":
-            #     semantic_error(node.lineno, f"Argument #{i} must be Integer, not {t}")
-            pass
-
-        # TODO: ???
+            semantic_error(node.lineno, f"Got {arg_types[1]} arguments, expected 1 or 2")
 
         if arg_types[1] == 1:
             return t_Matrix, (node.args.values[0], node.args.values[0])
         else:
             return t_Matrix, (node.args.values[0], node.args.values[1])
-
-
 
     def visit_Assignment(self, node):
         operator = node.op
@@ -160,7 +136,7 @@ class TypeChecker(NodeVisitor):
             if isinstance(node.left, AST.Slice):
                 t_left = self.visit(node.left)
                 if not node.right in t_Numerical:
-                    semantic_error(node.lineo, f"Zła wartość dla koordynatu komórki macierzy")
+                    semantic_error(node.lineo, f"Value {t_right} cannot be assigned to matrix cell '{t_left[0]}'")
                 else:
                     self.symbol_table.put(node.left.name, SymbolTable.VariableSymbol(node.left.name, t_right))
             else:
@@ -171,18 +147,17 @@ class TypeChecker(NodeVisitor):
                 t_left = self.visit(node.left)
                 if isinstance(node.left, AST.Slice):
                     if t_right not in t_Numerical:
-                        semantic_error(node.lineno, f"Nie przypiszemy {t_right} do {t_left[0]} komórki")
+                        semantic_error(node.lineno, f"Value {t_right} cannot be assigned to matrix cell '{t_left[0]}'")
                 elif t_left != t_right:
-                    semantic_error(node.lineno, f"Zły typ dla'{operator}' operatora")
-
-
+                    semantic_error(node.lineno, f"Wrong type for operator '{operator}'")
 
     def visit_Slice(self, node):
         symbol = self.symbol_table.get(node.name)
         indices = self.visit(node.vector)
+
         if not symbol:
             semantic_error(node.lineno, f"Reference to undefined variable: {node.name}")
-            return  # handle NullPointerException
+            return
 
         # matrix
         if not isinstance(symbol.type, Tuple):
@@ -191,30 +166,41 @@ class TypeChecker(NodeVisitor):
 
         symbol_type = symbol.type[0]
         dims = symbol.type[1]
-
         if symbol_type == t_Matrix:
             if len(node.vector.values) != 2 and isinstance(dims, Tuple) and len(dims) == 2:
-                semantic_error(node.lineno,
-                               f"Provided {len(node.vector.values)} {'index' if len(indices) == 1 else 'indices'}, 2 required")
+                semantic_error(node.lineno, f"Required 2 arguments, got {len(node.vector.values)}")
             else:
                 for i in range(2):
                     v = node.vector.values[i].value
                     d = dims[i].value
                     if v and d and (v < 0 or v >= d):
-                        semantic_error(node.lineno,
-                                       f"Index {v} is out of range for matrix {symbol.name} with shape {dims} at axis {i}")
+                        semantic_error(node.lineno, f"Index {v} is out of range for matrix {symbol.name} with shape {d} at axis {i}")
 
         # vector
         elif symbol_type == t_Vector:
-            if len(indices) != 1:
-                semantic_error(node.lineno, f"Provided {len(indices)} indices for vector {symbol.name}, 1 required")
-            elif indices[0] and dims and (indices[0] < 0 or indices[0] >= dims):
-                semantic_error(node.lineno, f"Index {indices[0]} is out of range for vector with length {dims}")
-
+            if len(node.vector.values) != 1:
+                semantic_error(node.lineno, f"Required 1 argument, got {len(node.vector.values)}")
+            else:
+                v = node.vector.values[0].value
+                if v and dims and (v < 0 or v >= dims):
+                    semantic_error(node.lineno, f"Index {indices[0]} is out of range for vector with length {dims}")
         else:
             semantic_error(node.lineno, f"{symbol.type} is not subscritable")
 
         return symbol_type, dims
+
+    def visit_ReturnStatement(self, node: AST.ReturnStatement):
+        if node.expression is not None:
+            return self.visit(node.expression)
+        return None
+
+    def visit_ContBreakStatement(self, node):
+        if not self.symbol_table.inLoop():
+            semantic_error(node.lineno, f"'{node.statement}' statement not in loop scope")
+
+    def visit_PrintF(self, node: AST.PrintF):
+        self.visit(node.expressions)
+        return None
 
     def visit_BinExpr(self, node):
         type1 = self.visit(node.left)
@@ -227,7 +213,6 @@ class TypeChecker(NodeVisitor):
         if isinstance(type2, Tuple):
             type2, dims2 = type2
 
-
         if type1 is not None and type2 is not None:
             if op in t_Binary_ops:
                 if type1 == t_Matrix or type2 == t_Matrix:
@@ -236,17 +221,16 @@ class TypeChecker(NodeVisitor):
                     elif op in {'+', '-'}:
                         if dims1 != dims2:
                             semantic_error(node.lineno,
-                                           f'Cannot use {op} with matrices of different shapes ({dims1} and {dims2})')
+                                f'Cannot use {op} with matrices of incompatible shapes ({dims1[0].value}, {dims1[1].value}) and ({dims2[0].value}, {dims2[1].value})')
                         else:
                             return t_Matrix, dims1
                     elif op == '*':
                         if dims1[1] != dims2[0]:
-                            semantic_error(node.lineno,
-                                           f'Cannot use {op} with matrices of incompatible shapes ({dims1} and {dims2})')
+                            semantic_error(node.lineno, f'Cannot use {op} with matrices of incompatible shapes ({dims1[0].value}, {dims1[1].value}) and ({dims2[0].value}, {dims2[1].value})')
                         else:
                             return t_Matrix, (dims1[0], dims2[1])
                     elif op == '/':
-                        semantic_error(node.lineno, 'Dzielenie macierzy jest niewspierane')
+                        semantic_error(node.lineno, 'Matrix division is not supported')
 
                 elif type1 == t_Vector or type2 == t_Vector:
                     if type1 != type2:
@@ -265,11 +249,8 @@ class TypeChecker(NodeVisitor):
                 if type1 != t_Matrix or type2 != t_Matrix:
                     semantic_error(node.lineno, f'{type1} {type2} not compatible with {op}')
                 elif dims1 != dims2:
-                    semantic_error(node.lineno, f'Cannot use {op} with matrices of different shapes ({dims1} and {dims2})')
-            else:
-                semantic_error("BinExpr: Unhandled arithmetic operation?!")
+                    semantic_error(node.lineno, f'Cannot use {op} with matricexs of incompatible shapes ({dims1} and {dims2})')
+
         else:
-            if type1 is None:
-                semantic_error(node.lineno, f"BinExpr: invalid left operand type: {type1}")
-            if type2 is None:
-                semantic_error(node.lineno, f"BinExpr: invalid right operand type: {type2}")
+            if type1 is None or type2 is None:
+                semantic_error(node.lineno, f"Invalid operand type: {type2}")
