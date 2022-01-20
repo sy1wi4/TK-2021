@@ -7,7 +7,7 @@ if __name__ == '__main__':
 
     try:
         filename = sys.argv[1] if len(sys.argv) > 1 else "examples/init.m"
-        file = open(filename, "r")
+        file = open(filename, "r")a
     except IOError:
         print("Cannot open {0} file".format(filename))
         sys.exit(0)
