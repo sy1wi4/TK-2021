@@ -16,6 +16,9 @@ class Node(object):
             self.children = [children]
             self.next = []
 
+    def accept(self, visitor):
+        return visitor.visit(self)
+
 
 class Program(Node):
     def __init__(self, instructions=None):
@@ -127,11 +130,10 @@ class WhileLoop(Node):
 
 
 class ForLoop(Node):
-    def __init__(self, variable, left_range, right_range, instruction):
+    def __init__(self, variable, _range, instruction):
         super().__init__()
         self.variable = variable
-        self.left_range = left_range
-        self.right_range = right_range
+        self._range = _range
         self.instruction = instruction
 
 
@@ -159,3 +161,19 @@ class ContBreakStatement(Node):
     def __init__(self, statement):
         super().__init__()
         self.statement = statement
+
+
+class Expressions(Node):
+    def __init__(self, expression=None):
+        super().__init__()
+        if expression is not None:
+            self.expressions = [expression]
+        else:
+            self.expressions = []
+
+
+class Range(Node):
+    def __init__(self, left, right):
+        super().__init__()
+        self.left = left
+        self.right = right

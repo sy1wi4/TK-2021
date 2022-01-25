@@ -1,8 +1,8 @@
 
 import sys
 import ply.yacc as yacc
-from lab4 import Mparser
-from lab4.TypeChecker import TypeChecker
+from lab5 import Mparser
+from lab5.TypeChecker import TypeChecker
 from TreePrinter import TreePrinter
 from Interpreter import Interpreter
 
@@ -10,7 +10,7 @@ from Interpreter import Interpreter
 if __name__ == '__main__':
 
     try:
-        filename = sys.argv[1] if len(sys.argv) > 1 else "examples/pi.m"
+        filename = sys.argv[1] if len(sys.argv) > 1 else "examples/primes.m"
         file = open(filename, "r")
     except IOError:
         print("Cannot open {0} file".format(filename))
