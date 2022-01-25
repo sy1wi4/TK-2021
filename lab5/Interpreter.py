@@ -168,7 +168,8 @@ class Interpreter(object):
     def visit(self, node):
         memory_stack.push(Memory("for"))
 
-        left_range, right_range = node._range.accept(self)
+        left_range = node.left_range.accept(self)
+        right_range = node.right_range.accept(self)
         memory_stack.set(node.variable.name, left_range)
 
         i = left_range

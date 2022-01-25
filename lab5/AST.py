@@ -130,10 +130,11 @@ class WhileLoop(Node):
 
 
 class ForLoop(Node):
-    def __init__(self, variable, _range, instruction):
+    def __init__(self, variable, left_range, right_range, instruction):
         super().__init__()
         self.variable = variable
-        self._range = _range
+        self.left_range = left_range
+        self.right_range = right_range
         self.instruction = instruction
 
 
@@ -170,10 +171,3 @@ class Expressions(Node):
             self.expressions = [expression]
         else:
             self.expressions = []
-
-
-class Range(Node):
-    def __init__(self, left, right):
-        super().__init__()
-        self.left = left
-        self.right = right
