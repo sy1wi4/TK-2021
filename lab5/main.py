@@ -5,9 +5,9 @@ from lab5 import Mparser
 from lab5.TypeChecker import TypeChecker
 
 if __name__ == '__main__':
-
+    # works for fibonacci, sqrt and pi files
     try:
-        filename = sys.argv[1] if len(sys.argv) > 1 else "examples/fibonacci.m"
+        filename = sys.argv[1] if len(sys.argv) > 1 else "examples/pi.m"
         file = open(filename, "r")
     except IOError:
         print("Cannot open {0} file".format(filename))

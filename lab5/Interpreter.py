@@ -1,6 +1,5 @@
 
 import AST
-import SymbolTable
 from Memory import *
 from Exceptions import *
 from visit import *
@@ -70,7 +69,6 @@ class Interpreter(object):
 
     @when(AST.Variable)
     def visit(self, node):
-        # print("variable ", node.name)
         return memory_stack.get(node.name)
 
     @when(AST.Matrix)
@@ -198,7 +196,7 @@ class Interpreter(object):
     @when(AST.PrintF)
     def visit(self, node):
         expression_evals = node.expressions.accept(self)
-        print(expression_evals)
+        print(*expression_evals)
 
     @when(AST.ReturnStatement)
     def visit(self, node):

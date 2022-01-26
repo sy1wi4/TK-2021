@@ -77,7 +77,6 @@ def p_assignment(p):
 
     p[0] = AST.Assignment(p[2], p[1], p[3])
     p[0].lineno = p.lineno(2)
-    print(p[:])
 
 
 def p_identifier(p):
@@ -191,7 +190,6 @@ def p_number(p):
         p[0] = AST.FloatNum(p[1])
 
 
-# TODO: reszta sys
 def p_sys_function_1(p):
     """ sys_function : PRINT print_block """
     p[0] = AST.PrintF(p[2])
@@ -264,7 +262,6 @@ def p_comp_device(p):
                    | '<'
                    | '>' """
     p[0] = p[1]
-    # p[0].lineno = p.lineno(2)
 
 
 parser = yacc.yacc()

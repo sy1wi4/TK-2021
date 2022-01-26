@@ -59,13 +59,11 @@ def printTheError(line, error_mess):
 class NodeVisitor(object):
 
     def visit(self, node):
-        print("visit     ", node.__class__.__name__)
         method = 'visit_' + node.__class__.__name__
         visitor = getattr(self, method, self.generic_visit)
         return visitor(node)
 
     def generic_visit(self, node):  # Called if no explicit visitor function exists for a node.
-        print("visit_gen " + node.__class__.__name__)
         if isinstance(node, list):
             for elem in node:
                 self.visit(elem)
