@@ -16,6 +16,9 @@ class Node(object):
             self.children = [children]
             self.next = []
 
+    def accept(self, visitor):
+        return visitor.visit(self)
+
 
 class Program(Node):
     def __init__(self, instructions=None):
@@ -159,3 +162,12 @@ class ContBreakStatement(Node):
     def __init__(self, statement):
         super().__init__()
         self.statement = statement
+
+
+class Expressions(Node):
+    def __init__(self, expression=None):
+        super().__init__()
+        if expression is not None:
+            self.expressions = [expression]
+        else:
+            self.expressions = []
