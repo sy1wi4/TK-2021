@@ -177,7 +177,7 @@ def p_number(p):
     if type(p[1]) == int:
         p[0] = AST.IntNum(p[1])
     else:
-        AST.FloatNum(p[1])
+        p[0] = AST.FloatNum(p[1])
 
 
 # TODO: reszta sys

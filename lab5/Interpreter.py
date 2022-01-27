@@ -39,6 +39,11 @@ matrix_func = {
 memory_stack = MemoryStack(Memory('global'))
 
 
+def is_valid(container, type):
+    return isinstance(container[0], type) and isinstance(container[1], type)
+
+
+
 class Interpreter(object):
 
     @on('node')
@@ -116,21 +121,26 @@ class Interpreter(object):
         matrix = memory_stack.get(node.name)
 
         if len(indices) == 1:
-            if isinstance(indices[0], tuple) and isinstance(indices[0][0], int) and isinstance(indices[0][1], int):
+            # tupla intów : wycinek jednowymiarowy (np. a[1:3])
+            if isinstance(indices[0], tuple) and is_valid(indices[0], int):
                 return matrix[int(indices[0][0]):int(indices[0][1])]
-                # xd
+            # wycienek do końca (np. a[1:])
             elif node.assignable and isinstance(indices[0], int):
                 return matrix[int(indices[0]):int(indices[0]+1)]
+            # zwykłe odwołanie
             elif isinstance(indices[0], int):
                 return matrix[int(indices[0])]
             else:
                 raise RuntimeError(f"{node.lineno}: Invalid indices type!")
         else:
-            if isinstance(indices[0], tuple) and isinstance(indices[0][0], int) and isinstance(indices[0][1], int) and isinstance(indices[1][0], int) and isinstance(indices[1][1], int):
+            # wycinek dwuwymiarowy (np a[1:3, 3:4])
+            if isinstance(indices[0], tuple) and is_valid(indices[0], int) and is_valid(indices[1], int):
                 return matrix[int(indices[0][0]):int(indices[0][1]), int(indices[1][0]):int(indices[1][1])]
-            elif node.assignable and isinstance(indices[0], int) and isinstance(indices[1], int):
+            # wycinek typu a[1:, 2:]
+            elif node.assignable and is_valid(indices, int):
                 return matrix[int(indices[0]):int(indices[0]+1), int(indices[1]):int(indices[1]+1)]
-            elif isinstance(indices[0], int) and isinstance(indices[1], int):
+            # zwykłe odwołanie
+            elif is_valid(indices, int):
                 return matrix[int(indices[0]), int(indices[1])]
             else:
                 raise RuntimeError(f"{node.lineno}: Invalid indices type!")

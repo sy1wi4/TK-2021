@@ -61,6 +61,7 @@ class NodeVisitor(object):
     def visit(self, node):
         method = 'visit_' + node.__class__.__name__
         visitor = getattr(self, method, self.generic_visit)
+        //print("visiting" + node.__class__.__name__)
         return visitor(node)
 
     def generic_visit(self, node):  # Called if no explicit visitor function exists for a node.

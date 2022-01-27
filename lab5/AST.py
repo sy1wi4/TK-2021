@@ -72,6 +72,7 @@ class Slice(Node):
         super().__init__()
         self.name = name
         self.vector = vector
+        self.assignable = False
 
 
 class Matrix(Node):

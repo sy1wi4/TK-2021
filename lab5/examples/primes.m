@@ -1,6 +1,7 @@
 for n = 2:100 {
     p = 1;
-    for d = 2:n-1 {
+    k = n-1;
+    for d = 2:k {
         nc = n;
         while (nc > 0) nc -= d;
         if (nc == 0) {
