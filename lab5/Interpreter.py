@@ -124,7 +124,7 @@ class Interpreter(object):
             # tupla intów : wycinek jednowymiarowy (np. a[1:3])
             if isinstance(indices[0], tuple) and is_valid(indices[0], int):
                 return matrix[int(indices[0][0]):int(indices[0][1])]
-            # wycienek do końca (np. a[1:])
+            # wycinek do końca (np. a[1:])
             elif node.assignable and isinstance(indices[0], int):
                 return matrix[int(indices[0]):int(indices[0]+1)]
             # zwykłe odwołanie

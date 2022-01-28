@@ -77,7 +77,7 @@ class Matrix(Node):
         self.rows = [rows]
 
 
-class Row_list(Node):
+class RowList(Node):
     def __init__(self, row):
         super().__init__()
         if row is None:
